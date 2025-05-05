@@ -27,8 +27,6 @@ export class Settings {
   public static readonly SHOW_DIE = process.env.SHOW_DIE
     ? process.env.SHOW_DIE === 'true'
     : false;
-  public static readonly ADDON_REQUEST_USER_AGENT =
-    process.env.ADDON_REQUEST_USER_AGENT ?? `AIOStreams/${p.version}`;
   public static readonly LOG_SENSITIVE_INFO = process.env.LOG_SENSITIVE_INFO
     ? process.env.LOG_SENSITIVE_INFO === 'true'
     : false;
@@ -55,6 +53,10 @@ export class Settings {
   public static readonly STREMIO_ADDONS_CONFIG_SIGNATURE =
     process.env.STREMIO_ADDONS_CONFIG_SIGNATURE || null;
 
+  // User Agent
+  public static readonly DEFAULT_USER_AGENT =
+    process.env.DEFAULT_USER_AGENT ?? `AIOStreams/${p.version}`;
+
   // Cache settings
   public static readonly CACHE_STREAM_RESULTS = process.env.CACHE_STREAM_RESULTS
     ? process.env.CACHE_STREAM_RESULTS === 'true'
@@ -71,6 +73,10 @@ export class Settings {
     .CACHE_MEDIAFUSION_CONFIG_TTL
     ? parseInt(process.env.CACHE_MEDIAFUSION_CONFIG_TTL)
     : 30 * 24 * 60 * 60; // 30 days
+  public static readonly CACHE_STREMTHRU_IP_TTL = process.env
+    .CACHE_STREMTHRU_IP_TTL
+    ? parseInt(process.env.CACHE_STREMTHRU_IP_TTL)
+    : 900;
   public static readonly MAX_CACHE_SIZE = process.env.MAX_CACHE_SIZE
     ? parseInt(process.env.MAX_CACHE_SIZE)
     : 10240;
@@ -82,6 +88,15 @@ export class Settings {
   public static readonly MAX_KEYWORD_FILTERS = process.env.MAX_KEYWORD_FILTERS
     ? parseInt(process.env.MAX_KEYWORD_FILTERS)
     : 30;
+  public static readonly MAX_REGEX_SORT_PATTERNS = process.env
+    .MAX_REGEX_SORT_PATTERNS
+    ? parseInt(process.env.MAX_REGEX_SORT_PATTERNS)
+    : 30;
+
+  // for directly entering the regex patterns here, replace the process.env.DEFAULT_REGEX_EXCLUDE_PATTERN with the regex pattern/s
+  public static readonly DEFAULT_REGEX_EXCLUDE_PATTERN = Settings.validateRegexPattern(process.env.DEFAULT_REGEX_EXCLUDE_PATTERN);
+  public static readonly DEFAULT_REGEX_INCLUDE_PATTERN = Settings.validateRegexPattern(process.env.DEFAULT_REGEX_INCLUDE_PATTERN);
+  public static readonly DEFAULT_REGEX_SORT_PATTERNS = Settings.validateRegexSortPatterns(process.env.DEFAULT_REGEX_SORT_PATTERNS);
   public static readonly MAX_MOVIE_SIZE = process.env.MAX_MOVIE_SIZE
     ? parseInt(process.env.MAX_MOVIE_SIZE)
     : 161061273600; // 150GiB
@@ -108,10 +123,21 @@ export class Settings {
   public static readonly MEDIAFLOW_IP_TIMEOUT = process.env.MEDIAFLOW_IP_TIMEOUT
     ? parseInt(process.env.MEDIAFLOW_IP_TIMEOUT)
     : 30000;
-  public static readonly ENCRYPT_MEDIAFLOW_URLS = process.env
-    .ENCRYPT_MEDIAFLOW_URLS
-    ? process.env.ENCRYPT_MEDIAFLOW_URLS === 'true'
-    : false;
+  public static readonly ENCRYPT_MEDIAFLOW_URLS =
+    process.env.ENCRYPT_MEDIAFLOW_URLS !== 'false';
+
+  // StremThru settings
+  public static readonly DEFAULT_STREMTHRU_URL =
+    process.env.DEFAULT_STREMTHRU_URL ?? '';
+  public static readonly DEFAULT_STREMTHRU_CREDENTIAL =
+    process.env.DEFAULT_STREMTHRU_CREDENTIAL ?? '';
+  public static readonly DEFAULT_STREMTHRU_PUBLIC_IP =
+    process.env.DEFAULT_STREMTHRU_PUBLIC_IP ?? '';
+  public static readonly STREMTHRU_TIMEOUT = process.env.STREMTHRU_TIMEOUT
+    ? parseInt(process.env.STREMTHRU_TIMEOUT)
+    : 30000;
+  public static readonly ENCRYPT_STREMTHRU_URLS =
+    process.env.ENCRYPT_STREMTHRU_URLS !== 'false';
 
   // Comet settings
   public static readonly COMET_URL =
@@ -129,6 +155,8 @@ export class Settings {
     .DEFAULT_COMET_TIMEOUT
     ? parseInt(process.env.DEFAULT_COMET_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_COMET_USER_AGENT =
+    process.env.DEFAULT_COMET_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   // MediaFusion settings
   public static readonly MEDIAFUSION_URL =
@@ -143,6 +171,8 @@ export class Settings {
     .MEDIAFUSION_CONFIG_TIMEOUT
     ? parseInt(process.env.MEDIAFUSION_CONFIG_TIMEOUT)
     : 5000;
+  public static readonly DEFAULT_MEDIAFUSION_USER_AGENT =
+    process.env.DEFAULT_MEDIAFUSION_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   // Jackettio settings
   public static readonly JACKETTIO_URL =
@@ -161,6 +191,14 @@ export class Settings {
     .DEFAULT_JACKETTIO_TIMEOUT
     ? parseInt(process.env.DEFAULT_JACKETTIO_TIMEOUT)
     : undefined;
+  public static readonly FORCE_JACKETTIO_HOSTNAME =
+    process.env.FORCE_JACKETTIO_HOSTNAME ?? null;
+  public static readonly FORCE_JACKETTIO_PORT =
+    process.env.FORCE_JACKETTIO_PORT ?? null;
+  public static readonly FORCE_JACKETTIO_PROTOCOL =
+    process.env.FORCE_JACKETTIO_PROTOCOL ?? null;
+  public static readonly DEFAULT_JACKETTIO_USER_AGENT =
+    process.env.DEFAULT_JACKETTIO_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   // Stremio Jackett settings
   public static readonly STREMIO_JACKETT_URL =
@@ -175,6 +213,9 @@ export class Settings {
     .DEFAULT_STREMIO_JACKETT_TIMEOUT
     ? parseInt(process.env.DEFAULT_STREMIO_JACKETT_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_STREMIO_JACKETT_USER_AGENT =
+    process.env.DEFAULT_STREMIO_JACKETT_USER_AGENT ??
+    Settings.DEFAULT_USER_AGENT;
 
   // Torrentio settings
   public static readonly TORRENTIO_URL =
@@ -183,6 +224,8 @@ export class Settings {
     .DEFAULT_TORRENTIO_TIMEOUT
     ? parseInt(process.env.DEFAULT_TORRENTIO_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_TORRENTIO_USER_AGENT =
+    process.env.DEFAULT_TORRENTIO_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly ORION_STREMIO_ADDON_URL =
     process.env.ORION_STREMIO_ADDON_URL ||
@@ -191,6 +234,8 @@ export class Settings {
     .DEFAULT_ORION_TIMEOUT
     ? parseInt(process.env.DEFAULT_ORION_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_ORION_USER_AGENT =
+    process.env.DEFAULT_ORION_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly PEERFLIX_URL =
     process.env.PEERFLIX_URL || 'https://peerflix-addon.onrender.com/';
@@ -198,6 +243,8 @@ export class Settings {
     .DEFAULT_PEERFLIX_TIMEOUT
     ? parseInt(process.env.DEFAULT_PEERFLIX_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_PEERFLIX_USER_AGENT =
+    process.env.DEFAULT_PEERFLIX_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly TORBOX_STREMIO_URL =
     process.env.TORBOX_STREMIO_URL || 'https://stremio.torbox.app/';
@@ -205,6 +252,8 @@ export class Settings {
     .DEFAULT_TORBOX_TIMEOUT
     ? parseInt(process.env.DEFAULT_TORBOX_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_TORBOX_USER_AGENT =
+    process.env.DEFAULT_TORBOX_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly EASYNEWS_URL =
     process.env.EASYNEWS_URL ||
@@ -213,6 +262,8 @@ export class Settings {
     .DEFAULT_EASYNEWS_TIMEMOUT
     ? parseInt(process.env.DEFAULT_EASYNEWS_TIMEMOUT)
     : undefined;
+  public static readonly DEFAULT_EASYNEWS_USER_AGENT =
+    process.env.DEFAULT_EASYNEWS_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly EASYNEWS_PLUS_URL =
     process.env.EASYNEWS_PLUS_URL ||
@@ -221,6 +272,8 @@ export class Settings {
     .DEFAULT_EASYNEWS_PLUS_TIMEMOUT
     ? parseInt(process.env.DEFAULT_EASYNEWS_PLUS_TIMEMOUT)
     : undefined;
+  public static readonly DEFAULT_EASYNEWS_PLUS_USER_AGENT =
+    process.env.DEFAULT_EASYNEWS_PLUS_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly EASYNEWS_PLUS_PLUS_URL =
     process.env.EASYNEWS_PLUS_PLUS_URL ||
@@ -229,6 +282,9 @@ export class Settings {
     .DEFAULT_EASYNEWS_PLUS_PLUS_TIMEMOUT
     ? parseInt(process.env.DEFAULT_EASYNEWS_PLUS_PLUS_TIMEMOUT)
     : undefined;
+  public static readonly DEFAULT_EASYNEWS_PLUS_PLUS_USER_AGENT =
+    process.env.DEFAULT_EASYNEWS_PLUS_PLUS_USER_AGENT ??
+    Settings.DEFAULT_USER_AGENT;
 
   public static readonly DEBRIDIO_URL =
     process.env.DEBRIDIO_URL || 'https://debridio.adobotec.com/';
@@ -236,14 +292,59 @@ export class Settings {
     .DEFAULT_DEBRIDIO_TIMEOUT
     ? parseInt(process.env.DEFAULT_DEBRIDIO_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_DEBRIDIO_USER_AGENT =
+    process.env.DEFAULT_DEBRIDIO_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
+
+  public static readonly STREMTHRU_STORE_URL =
+    process.env.STREMTHRU_STORE_URL ||
+    'https://stremthru.elfhosted.com/stremio/store/';
+  public static readonly DEFAULT_STREMTHRU_STORE_TIMEOUT = process.env
+    .DEFAULT_STREMTHRU_STORE_TIMEOUT
+    ? parseInt(process.env.DEFAULT_STREMTHRU_STORE_TIMEOUT)
+    : undefined;
+  public static readonly DEFAULT_STREMTHRU_STORE_USER_AGENT =
+    process.env.DEFAULT_STREMTHRU_STORE_USER_AGENT ??
+    Settings.DEFAULT_USER_AGENT;
 
   public static readonly DEFAULT_DMM_CAST_TIMEOUT = process.env
     .DEFAULT_DMM_CAST_TIMEOUT
     ? parseInt(process.env.DEFAULT_DMM_CAST_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_DMM_CAST_USER_AGENT =
+    process.env.DEFAULT_DMM_CAST_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
 
   public static readonly DEFAULT_GDRIVE_TIMEOUT = process.env
     .DEFAULT_GDRIVE_TIMEOUT
     ? parseInt(process.env.DEFAULT_GDRIVE_TIMEOUT)
     : undefined;
+  public static readonly DEFAULT_GDRIVE_USER_AGENT =
+    process.env.DEFAULT_GDRIVE_USER_AGENT ?? Settings.DEFAULT_USER_AGENT;
+
+  // helper function to validate the regex patterns
+  private static validateRegexPattern(pattern: string | undefined): string | undefined {
+    if (!pattern) return undefined;
+    try {
+      new RegExp(pattern);
+      return pattern;
+    } catch (e) {
+      console.error('Invalid regex pattern in environment variables:', pattern);
+      return undefined;
+    }
+  }
+
+  private static validateRegexSortPatterns(patterns: string | undefined): string | undefined {
+    if (!patterns) return undefined;
+    const patternList = patterns.split(/\s+/).filter(Boolean);
+    if (patternList.length > Settings.MAX_REGEX_SORT_PATTERNS) {
+      console.error(`Too many regex sort patterns in environment variables (max ${Settings.MAX_REGEX_SORT_PATTERNS})`);
+      return undefined;
+    }
+    try {
+      patternList.forEach(pattern => new RegExp(pattern));
+      return patterns;
+    } catch (e) {
+      console.error('Invalid regex sort pattern in environment variables:', e);
+      return undefined;
+    }
+  }
 }
